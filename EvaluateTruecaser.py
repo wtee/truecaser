@@ -1,21 +1,39 @@
+import os
+import sys
+import argparse
 from Truecaser import *
-import cPickle
+import pickle as cPickle
 import nltk
 import string
+from tqdm import tqdm
 
+# Create arguemnt parser
+def create_parser():
+    parser = argparse.ArgumentParser(description='Evaluate True Caser.')
+    parser.add_argument('-in_path', type=str,
+                        help='The *file* path to the input file contained sentences seperated by newline.')
+    parser.add_argument('-out_path', type=str,
+                        help='The *folder* path to the output files.')
+    parser.add_argument('-out_prefix', type=str,
+                        help='The prefix of output file name.')
+    parser.add_argument('-out_suffix', type=str,
+                        help='The suffix of output file name. Typically "src" or "tgt".')
+    return parser
 
 def evaluateTrueCaser(testSentences, wordCasingLookup, uniDist, backwardBiDist, forwardBiDist, trigramDist):
     correctTokens = 0
     totalTokens = 0
+    casedTestSentences = []
     
-    for sentence in testSentences:
+    for sentence in tqdm(testSentences):
         tokensCorrect = nltk.word_tokenize(sentence)
         tokens = [token.lower() for token in tokensCorrect]
         tokensTrueCase = getTrueCase(tokens, 'title', wordCasingLookup, uniDist, backwardBiDist, forwardBiDist, trigramDist)
+        casedTestSentences.append(' '.join(tokensTrueCase))
         
         perfectMatch = True
         
-        for idx in xrange(len(tokensCorrect)):
+        for idx in range(len(tokensCorrect)):
             totalTokens += 1
             if tokensCorrect[idx] == tokensTrueCase[idx]:
                 correctTokens += 1
@@ -23,16 +41,15 @@ def evaluateTrueCaser(testSentences, wordCasingLookup, uniDist, backwardBiDist, 
                 perfectMatch = False
         
         if not perfectMatch:
-            print tokensCorrect
-            print tokensTrueCase
-        
-            print "-------------------"
-    
+            print(tokensCorrect)
+            print(tokensTrueCase)
+            print("-------------------")
 
-    print "Accuracy: %.2f%%" % (correctTokens / float(totalTokens)*100)
+    print("Accuracy: %.2f%%" % (correctTokens / float(totalTokens)*100))
     
+    return casedTestSentences
     
-def defaultTruecaserEvaluation(wordCasingLookup, uniDist, backwardBiDist, forwardBiDist, trigramDist):
+def loadDefaultTestSentences():
     testSentences = [
         "Its website was launched on February 4, 2004 by Mark Zuckerberg with his Harvard College roommates and fellow students Eduardo Saverin, Andrew McCollum, Dustin Moskovitz, and Chris Hughes."
         ,"Facebook is a for-profit corporation and online social networking service based in Menlo Park, California, United States. "
@@ -89,10 +106,10 @@ def defaultTruecaserEvaluation(wordCasingLookup, uniDist, backwardBiDist, forwar
         ,"Internationally, Ulm is primarily known for having the church with the tallest steeple in the world (161.53 m or 529.95 ft), the Gothic minster (Ulm Minster) and as the birthplace of Albert Einstein."
     ]
     
-    evaluateTrueCaser(testSentences, wordCasingLookup, uniDist, backwardBiDist, forwardBiDist, trigramDist)
+    return testSentences
     
-if __name__ == "__main__":       
-    f = open('english_distributions.obj', 'rb')
+def main(args):
+    f = open('distributions.obj', 'rb')
     uniDist = cPickle.load(f)
     backwardBiDist = cPickle.load(f)
     forwardBiDist = cPickle.load(f)
@@ -100,4 +117,29 @@ if __name__ == "__main__":
     wordCasingLookup = cPickle.load(f)
     f.close()
     
-    defaultTruecaserEvaluation(wordCasingLookup, uniDist, backwardBiDist, forwardBiDist, trigramDist)
+    testSentences = []
+    if args.in_path:
+        with open(args.in_path, 'r') as file_in:
+            for line in file_in:
+                testSentences.append(line.strip())
+    else:
+        testSentences = loadDefaultTestSentences()
+    
+    print('Evaluating {} test sentences...'.format(len(testSentences)))
+    casedTestSentences = evaluateTrueCaser(testSentences, wordCasingLookup, uniDist, backwardBiDist, forwardBiDist, trigramDist)
+    
+    if args.out_path or args.out_prefix or args.out_suffix:
+        # Check output path is exists, otherwise create one.
+        if not os.path.exists(args.out_path):
+            os.makedirs(args.out_path)
+        
+        file_out_path = os.path.join(args.out_path, '{}.truecased.{}'.format(args.out_prefix, args.out_suffix))
+        with open(file_out_path, 'w') as file_out:
+            for sentence in casedTestSentences:
+                print(sentence, file=file_out)
+            print('Save cased test sentences to "{}"'.format(file_out_path))
+    
+if __name__ == "__main__":
+    parser = create_parser()
+    args = parser.parse_args()
+    main(args)
