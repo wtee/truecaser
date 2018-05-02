@@ -1,3 +1,7 @@
+# Difference between original repo
+- **2018-05-03** Updated: Support Python 3.x.
+- **2018-05-03** Updated: `EvaluateTruecaser.py` now supports input sentences from a given file.
+
 # Language Independet Truecaser for Python
 This is an implementation of a trainable Truecaser for Python.
 
