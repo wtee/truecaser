@@ -1,4 +1,6 @@
 # Difference between original repo
+- **2018-11-24** Updated: Merged TrainFunctions.py and TrainTruecaser.py.
+  Converted train_truecaser.py to Python 3. Edited code to more pythonic style.
 - **2018-11-23** Updated: Made test sentences independent of `EvaluateTruecaser.py`.
 - **2018-05-03** Updated: Support Python 3.x.
 - **2018-05-03** Updated: `EvaluateTruecaser.py` now supports input sentences from a given file.
