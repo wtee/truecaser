@@ -1,8 +1,9 @@
 # Difference between original repo
+- **2018-11-23** Updated: Made test sentences independent of `EvaluateTruecaser.py`.
 - **2018-05-03** Updated: Support Python 3.x.
 - **2018-05-03** Updated: `EvaluateTruecaser.py` now supports input sentences from a given file.
 
-# Language Independet Truecaser for Python
+# Language Independent Truecaser for Python
 This is an implementation of a trainable Truecaser for Python.
 
 A truecaser converts a sentence where the casing was lost to the most probable casing. Use cases are sentences that are in all-upper case, in all-lower case or in title case.
@@ -23,7 +24,7 @@ All observed casings for `w_0` are tested and the casing with the highest score 
 The probabilities `P(...)` are computed based on a large training corpus.
 
 # Requirements
-The Code was written for Python 2.7 and requires NLTK 3.0.
+The code is written for Python 3.
 
 From NLTK, it uses the functions to spilt sentences into tokens and the FreqDist(). These parts of the code can easily be replaced, so that the code can be used without NLTK install.
 
@@ -40,7 +41,6 @@ To run the code, have a look at `EvaluateTruecaser.py`.
 
 # Train your own Truecaser
 You can retrain the Truecaser easily. Simply change the `train.txt` file with a large sample of sentences, change the `TrainTruecaser.py` such that is uses the `train.txt` and run the script. You can also use it for other languages than English like German, Spanish, or French.
-
 
 # Disclaimer
 Sorry that this is kind of shitty code without documentation. I was looking for my research for a truecaser, but I couldn't find any working implementation. I implemented this script in a hacky manner and it works quite well (at least for me).
